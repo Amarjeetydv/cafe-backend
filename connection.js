@@ -1,21 +1,23 @@
-const mysql=require('mysql');
+// Use PostgreSQL instead of MySQL
+const { Pool } = require('pg');
 require('dotenv').config();
 
-var connection=mysql.createConnection({
-    port:process.env.DB_PORT,
-    host:process.env.DB_HOST,
-    user:process.env.DB_USERNAME,
-    password:process.env.DB_PASSWORD,
-    database:process.env.DB_NAME,
-
-
-});
-connection.connect((err)=>{
-    if(!err){
-        console.log("Connected");
-    }
-    else{
-        console.log(err);
+// Create a new pool using the DATABASE_URL from .env
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Required for Neon and many cloud Postgres providers
     }
 });
-module.exports=connection;
+
+// Test the connection
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('Error connecting to PostgreSQL:', err.stack);
+    } else {
+        console.log('Connected to PostgreSQL!');
+        release();
+    }
+});
+
+module.exports = pool;
